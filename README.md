@@ -1,22 +1,40 @@
 # VITI-NETWORK-POLICIES-SSI
 
-Synchronization service that updates vitistack network policies in git.
+Synchronization service that generates Kubernetes NetworkPolicies and Cilium
+CIDRGroups from VITI Network Policy definitions and commits them to Git
+repositories.
 
 ## Overview
 
-VITI-NETWORK-POLICIES-SSI automatically updates network policies
+VITI-NETWORK-POLICIES-SSI is a Deno-based service that automates the generation
+and deployment of Kubernetes network policies by aggregating IP addresses from
+multiple sources and committing the resulting manifests to Git repositories.
 
-- **NAM**: Creates security groups based on domains and environments from IPAM
-- **IPAM**: Fetches prefixes from Netbox
-- **IPAM**: Fetches prefixes from Netbox
+**Key Features:**
+
+- **Multi-source IP aggregation**: Combines IP addresses from:
+  - **Netbox IPAM**: Fetches IP prefixes based on queries
+  - **VMware NSX**: Retrieves VM and security group IPs
+- **Dual policy generation**: Creates both:
+  - **Kubernetes NetworkPolicies**: Standard K8s network policies with ingress
+    rules
+  - **Cilium CIDRGroups**: Cilium-specific CIDR group resources
+- **Git integration**: Automatically commits generated policies to Git
+  repositories with branch management
+- **IPv4/IPv6 support**: Handles both IPv4 and IPv6 addresses with proper CIDR
+  notation
+- **Link-local filtering**: Excludes link-local addresses from policies
 - **Automated sync**: Runs on configurable intervals
 - **Flexible execution**: One-shot mode for CronJobs or continuous mode for
   long-running containers
 
 ## Requirements
 
-- Deno runtime
-- Access to NAM (Network Architecture Management) API
+- Deno runtime (v2.0 or higher)
+- Access to NAM (Network Architecture Management) API v2
+- Access to Netbox IPAM API
+- Access to VMware NSX Manager API
+- Git repository access with write permissions
 - Splunk HEC endpoint (optional, for logging)
 
 ## Installation
@@ -24,7 +42,7 @@ VITI-NETWORK-POLICIES-SSI automatically updates network policies
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd dcn-viti-network-policies-ssi
+cd dcn-nam-git-viti-network-policies-ssi
 
 # Copy example configuration files
 cp examples/config.yaml.example config/config.yaml
@@ -146,10 +164,10 @@ deno task test
 ## Project Structure
 
 ```
-dcn-viti-network-policies-ssi/
+dcn-nam-git-viti-network-policies-ssi/
 ├── main.ts                   # Application entry point
 ├── main_test.ts              # Test file
-├── deno.json                 # Deno configuration
+├── deno.json                 # Deno configuration and dependencies
 ├── Dockerfile                # Container image definition
 ├── docker-compose.yml        # Docker Compose configuration
 ├── README.md                 # This file
@@ -160,31 +178,32 @@ dcn-viti-network-policies-ssi/
 ├── examples/                 # Example configuration templates
 │   ├── config.yaml.example   # Config template with demo values
 │   ├── secrets.yaml.example  # Secrets template with demo tokens
-│   └── argo-dcn-viti-network-policies-ssi.yaml.example # Argo CD Application example
-├── logs/                     # Log files directory (auto-created)
+│   └── argo-nam-ipam-environments-ssi.yaml.example # Argo CD Application example
+├── logs/                     # Log files directory (auto-created in dev mode)
+├── tmp/                      # Temporary directory for Git repositories
 ├── charts/                   # Helm charts
-│   └── dcn-viti-network-policies-ssi/ # Production Helm chart
-│       ├── Chart.yaml        # Chart metadata (v0.9.24)
+│   └── dcn-ipam-nam-nsg-ssi/ # Production Helm chart
+│       ├── Chart.yaml        # Chart metadata
 │       ├── README.md         # Helm chart documentation
 │       ├── values.yaml       # Default values
 │       ├── env/              # Environment-specific values
 │       │   ├── prod.yaml     # Production configuration
-│       │   ├── qa.yaml       # QA configuration
-│       │   └── test.yaml     # Test configuration
+│       │   └── qa.yaml       # QA configuration
 │       └── templates/        # Kubernetes resource templates
 │           ├── _helpers.tpl  # Template helpers
 │           ├── configmap.yaml # ConfigMap template
 │           ├── credentials.yaml # Secret template
-│           └── cronjob.yaml  # CronJob template
-├── kubernetes/               # Basic Kubernetes manifests (alternative to Helm)
-│   ├── configmap.yaml        # ConfigMap for mapping config.yaml
-│   ├── secret.yaml           # Secret for mapping secrets.yaml
-│   └── dcn-viti-network-policies-ssi.yaml # Pod deployment
+│           ├── cronjob.yaml  # CronJob template
+│           └── deployment.yaml # Deployment template
 └── ssi/                      # Source code
     ├── ssi.worker.ts         # Main orchestration worker
-    ├── ssi.utils.ts          # Utility functions
+    ├── ssi.utils.ts          # Core utility functions for policy processing
     ├── loggers/
-        └── logger.ts         # Winston logger configuration
+    │   └── logger.ts         # Winston logger configuration
+    └── services/
+        ├── fortigate.service.ts # FortiGate integration
+        ├── git.service.ts    # Git operations and repository management
+        └── nsx.service.ts    # VMware NSX integration for VM and group IPs
 ```
 
 ## Deployment
@@ -198,32 +217,34 @@ standard Helm.
 
 ```bash
 # Install using Helm
-helm install dcn-viti-network-policies-ssi-prod ./charts/dcn-viti-network-policies-ssi \
-  -f charts/dcn-viti-network-policies-ssi/env/prod.yaml \
+helm install dcn-viti-network-policies-ssi-prod ./charts/dcn-ipam-nam-nsg-ssi \
+  -f charts/dcn-ipam-nam-nsg-ssi/env/prod.yaml \
   --set credentials.namToken="your-nam-token" \
   --set credentials.splunkToken="your-splunk-token"
 ```
 
 **Features:**
 
-- Environment-specific configurations (prod, qa, test)
+- Environment-specific configurations (prod, qa)
 - CronJob-based deployment with configurable schedules
 - Argo CD compatible with automated sync
-- See `charts/dcn-viti-network-policies-ssi/README.md` for complete
-  documentation
+- See
+  [charts/dcn-ipam-nam-nsg-ssi/README.md](charts/dcn-ipam-nam-nsg-ssi/README.md)
+  for complete documentation
 
 **Argo CD Deployment:**
 
 ```bash
 # Apply Argo CD Application manifest
-kubectl apply -f examples/argo-dcn-viti-network-policies-ssi.yaml.example
+kubectl apply -f examples/argo-nam-ipam-environments-ssi.yaml.example
 ```
 
 For detailed Helm chart usage, configuration options, and examples, see:
 
-- **Helm Chart README**: `charts/dcn-viti-network-policies-ssi/README.md`
+- **Helm Chart README**:
+  [charts/dcn-ipam-nam-nsg-ssi/README.md](charts/dcn-ipam-nam-nsg-ssi/README.md)
 - **Argo CD Example**:
-  `examples/argo-dcn-viti-network-policies-ssi.yaml.example`
+  [examples/argo-nam-ipam-environments-ssi.yaml.example](examples/argo-nam-ipam-environments-ssi.yaml.example)
 
 ### Docker
 
@@ -300,27 +321,10 @@ The `docker-compose.yml` includes:
 
 ### Kubernetes (Basic Manifests)
 
-For simple deployments without Helm, basic Kubernetes manifests are available:
+For simple deployments without Helm, basic Kubernetes manifests can be created.
+The recommended approach is to use the Helm chart for production deployments.
 
-```bash
-# Create namespace
-kubectl create namespace ssi
-
-# Apply configuration
-kubectl apply -f kubernetes/configmap.yaml
-kubectl apply -f kubernetes/secret.yaml
-kubectl apply -f kubernetes/dcn-viti-network-policies-ssi.yaml
-
-# Check status
-kubectl get pods -n ssi
-kubectl logs -n ssi dcn-viti-network-policies-ssi
-
-# Update configuration
-kubectl edit configmap dcn-viti-network-policies-ssi-config -n ssi
-kubectl delete pod dcn-viti-network-policies-ssi -n ssi  # Restart pod
-```
-
-**Note:** For production deployments, use the Helm chart instead for better
+**Note:** For production deployments, use the Helm chart for better
 configuration management and multi-environment support.
 
 **Deployment Options:**
@@ -329,12 +333,6 @@ configuration management and multi-environment support.
    deploy as a Kubernetes CronJob for scheduled one-shot executions
 2. **Long-running Pod**: Set `CRON_MODE: "true"` in ConfigMap for continuous
    execution with interval-based scheduling
-
-**Kubernetes Resources:**
-
-- **ConfigMap** (`configmap.yaml`): Non-sensitive configuration
-- **Secret** (`secret.yaml`): Sensitive credentials (NAM_TOKEN, SPLUNK_TOKEN)
-- **Pod** (`dcn-viti-network-policies-ssi.yaml`): Main application deployment
 
 **Security Features:**
 
@@ -346,6 +344,14 @@ configuration management and multi-environment support.
 - Resource limits enforced (128-384Mi memory, 100-300m CPU)
 - EmptyDir volume for logs (50Mi limit) - logs stored in container, not
   persisted
+
+**Required Access:**
+
+- **NAM API**: Read access to VITI Network Policy definitions
+- **Netbox IPAM**: Read access to IP prefixes via API queries
+- **VMware NSX**: Read access to VMs and security groups
+- **Git Repositories**: Write access to target repositories for committing
+  policies
 
 ### Configuration Paths
 
@@ -433,13 +439,79 @@ kubectl logs dcn-viti-network-policies-ssi -n ssi
 
 ## How It Works
 
-1. **Initialization**: Worker reads configuration and connects to NAM API
-2. **Fetch prefixes**: Retrieves prefixes from ipam based on domains and
-   environments
-3. **Deploy to NAM**:
-   - Creates missing security groups
-   - Updates security groups with new/removed members
-4. **Repeat**: Runs continuously at configured interval
+1. **Initialization**: Worker connects to NAM API and retrieves VITI Network
+   Policy definitions
+2. **Policy Processing**: For each VITI Network Policy:
+   - **Fetch IP Addresses**:
+     - Queries Netbox IPAM for IP prefixes based on configured query
+     - Retrieves VM IP addresses from VMware NSX
+     - Retrieves security group IPs from VMware NSX
+   - **IP Aggregation**: Combines all IPs into a deduplicated set
+   - **Filtering**: Removes link-local addresses and unsupported IP ranges
+   - **Policy Generation**:
+     - Creates Kubernetes NetworkPolicy manifest with ingress rules
+     - Creates Cilium CIDRGroup manifest with external CIDRs
+   - **Git Operations**:
+     - Clones/updates target Git repository (defined in policy)
+     - Checks out appropriate branch
+     - Writes manifests to repository directories:
+       - `kubernetesNetworkPolicies/<policy-name>.yaml`
+       - `ciliumGroups/<policy-name>.yaml`
+     - Commits and pushes changes to Git
+3. **Repeat**: Runs continuously at configured interval (continuous mode) or
+   exits (one-shot mode)
+
+**Generated Resources:**
+
+- **Kubernetes NetworkPolicy**: Standard K8s resource with `podSelector` and
+  `ingress` rules
+- **Cilium CIDRGroup**: Cilium-specific resource defining external CIDR blocks
+
+Both resources use the VITI Network Policy name as their resource name.
+
+## Example Output
+
+### Generated Kubernetes NetworkPolicy
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: viti-example-policy
+spec:
+  podSelector:
+    matchLabels:
+      network-policies: viti-example-policy
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/24
+        - ipBlock:
+            cidr: 192.168.1.100/32
+        - ipBlock:
+            cidr: 2001:db8::/64
+```
+
+### Generated Cilium CIDRGroup
+
+```yaml
+apiVersion: cilium.io/v2alpha1
+kind: CiliumCIDRGroup
+metadata:
+  name: viti-example-policy
+spec:
+  externalCIDRs:
+    - 10.0.0.0/24
+    - 192.168.1.100/32
+    - 2001:db8::/64
+```
+
+Files are written to the Git repository in:
+
+- `kubernetesNetworkPolicies/<policy-name>.yaml`
+- `ciliumGroups/<policy-name>.yaml`
 
 ## Logging
 
@@ -475,6 +547,19 @@ FILELOG_DAYS: "30d" # Retention period (30 days)
 ```
 
 ## Development
+
+### Key Dependencies
+
+The project uses the following main dependencies (defined in
+[deno.json](deno.json)):
+
+- **@norskhelsenett/zeniki**: NAM API driver and core utilities
+- **@std/yaml**: YAML parsing and serialization
+- **simple-git**: Git operations and repository management
+- **ipaddr.js**: IP address parsing and validation
+- **ip-num**: IP address validation utilities
+- **winston**: Logging framework with Splunk integration
+- **uuid**: Unique identifier generation
 
 ### Development Mode
 
