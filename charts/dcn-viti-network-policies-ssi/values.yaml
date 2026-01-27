@@ -1,0 +1,56 @@
+
+namespace: "ssi"
+nameOverride: ""
+image:
+  repository: "ncr.sky.nhn.no/ghcr/norskhelsenett/dcn-viti-network-policies-ssi"
+  tag: "latest"
+  pullPolicy: "Always"
+
+successfulJobsHistoryLimit: 3
+failedJobsHistoryLimit: 3
+allowConcurrent: false
+
+schedule: "*/15 * * * *"
+
+limits:
+  memory:
+    min: "384Mi"
+    max: "1152Mi"
+  cpu:
+    min: "300m"
+    max: "600m"
+
+settings:
+  infrastructure: prod # prod, qa
+  environment: production # Runtime environment: development, production
+  interval: 300 # In seconds
+  timeout: 3000 # In milliseconds
+  continuousMode: false
+
+integration:
+  nam:
+    url: ""
+  ipam:
+    url: ""
+  splunk:
+    enabled: true
+    url: "https://splunk-hec.nhn.no"
+    index: "dc_nam"
+    source: "dcn-viti-network-policies-ssi:prod"
+    token:
+
+credentials:
+  namToken:
+    vault:
+      enable: false                   # Enable fetching the token from Vault
+      name: openbao                   # Name of the SecretStore or ClusterSecretStore
+      key: /viti-network-policies-ssi # Path to the secret in Vault
+      property: NAM_TOKEN             # Property name within the secret to use as the token
+  splunkToken:
+    vault:
+      enable: false                   # Enable fetching the token from Vault
+      name: openbao                   # Name of the SecretStore or ClusterSecretStore
+      key: /viti-network-policies-ssi # Path to the secret in Vault
+      property: SPLUNK_TOKEN          # Property name within the secret to use as the token
+
+workspace: dcn-viti-network-policies-ssi
