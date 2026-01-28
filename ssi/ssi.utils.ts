@@ -195,6 +195,9 @@ export const processVitiNetworkPolicy = async (
 
       // Init simpleGit and fetch branches
       const git = simpleGit(gitOptions);
+      await git.addConfig("user.name", "VITI Network Policies SSI");
+      await git.addConfig("user.email", "dcn@nhn.no");
+
       await git.fetch();
       const branches = await git.branch();
 
