@@ -216,34 +216,34 @@ export const processVitiNetworkPolicy = async (
         await git.push("origin", gitBranch, { "--set-upstream": null });
       }
 
-      // // Ensure directories exist
-      // try {
-      //   await Deno.stat(
-      //     `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
-      //   );
-      // } catch {
-      //   await Deno.mkdir(
-      //     `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
-      //   );
-      // }
+      // Ensure directories exist
+      try {
+        await Deno.stat(
+          `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
+        );
+      } catch {
+        await Deno.mkdir(
+          `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
+        );
+      }
 
-      // try {
-      //   await Deno.stat(`${repoDir}/${repoNameMatch[1]}/ciliumGroups`);
-      // } catch {
-      //   await Deno.mkdir(`${repoDir}/${repoNameMatch[1]}/ciliumGroups`);
-      // }
+      try {
+        await Deno.stat(`${repoDir}/${repoNameMatch[1]}/ciliumGroups`);
+      } catch {
+        await Deno.mkdir(`${repoDir}/${repoNameMatch[1]}/ciliumGroups`);
+      }
 
       // Write files
       const fileName = `${vitiNetworkPolicy.name}.yaml`;
-      // await Deno.writeTextFile(
-      //   `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies/${fileName}`,
-      //   YAML.stringify(kubernetesNetworkPolicyJSON),
-      // );
+      await Deno.writeTextFile(
+        `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies/${fileName}`,
+        YAML.stringify(kubernetesNetworkPolicyJSON),
+      );
 
-      // await Deno.writeTextFile(
-      //   `${repoDir}/${repoNameMatch[1]}/ciliumGroups/${fileName}`,
-      //   YAML.stringify(ciliumGroupJSON),
-      // );
+      await Deno.writeTextFile(
+        `${repoDir}/${repoNameMatch[1]}/ciliumGroups/${fileName}`,
+        YAML.stringify(ciliumGroupJSON),
+      );
 
       // Refresh git status and check if git is clean
       gitStatus = await git.status();
