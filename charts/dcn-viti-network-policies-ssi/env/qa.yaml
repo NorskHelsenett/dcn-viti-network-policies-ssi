@@ -17,8 +17,6 @@ settings:
 integration:
   nam:
     url: "https://qa.dcn.nhn.no:3000/api"
-  ipam:
-    url: "https://ipam.qa.dcn.nhn.no/api"
   splunk:
     url: "https://splunk-hec.nhn.no"
     index: "dc_nam"
