@@ -2,8 +2,8 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: dcn-viti-network-policies-ssi-{{ .Values.settings.infrastructure }}
-  namespace: {{ .Values.namespace }}
+  name: viti-network-policies-ssi
+  namespace: {{ .Values.namespace | default "ssi" }}
 spec:
   schedule: {{ .Values.schedule | quote }}
   concurrencyPolicy: {{ .Values.allowConcurrent | ternary "Allow" "Forbid" }}
@@ -15,11 +15,11 @@ spec:
       template:
         metadata:
           labels:
-            app: dcn-viti-network-policies-ssi-{{ .Values.settings.infrastructure }}
+            app: viti-network-policies-ssi
         spec:
           restartPolicy: Never
           containers:
-            - name: dcn-viti-network-policies-ssi-{{ .Values.settings.infrastructure }}
+            - name: viti-network-policies-ssi
               image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
               imagePullPolicy: Always
               securityContext:
@@ -51,10 +51,10 @@ spec:
           volumes:
             - name: config
               configMap:
-                name: dcn-viti-network-policies-ssi-{{ .Values.settings.infrastructure }}-config
+                name: viti-network-policies-ssi-config
             - name: credentials
               secret:
-                secretName: dcn-viti-network-policies-ssi-{{ .Values.settings.infrastructure }}-secrets
+                secretName: viti-network-policies-ssi-secrets
             - name: logs
               emptyDir:
                 sizeLimit: 50Mi

@@ -36,21 +36,14 @@ integration:
     enabled: true
     url: "https://splunk-hec.nhn.no"
     index: "dc_nam"
-    source: "dcn-viti-network-policies-ssi:prod"
+    source: "viti-network-policies-ssi:qa"
     token:
+  
+vault:
+  enable: false
 
 credentials:
-  namToken:
-    vault:
-      enable: false                   # Enable fetching the token from Vault
-      name: openbao                   # Name of the SecretStore or ClusterSecretStore
-      key: /viti-network-policies-ssi # Path to the secret in Vault
-      property: NAM_TOKEN             # Property name within the secret to use as the token
-  splunkToken:
-    vault:
-      enable: false                   # Enable fetching the token from Vault
-      name: openbao                   # Name of the SecretStore or ClusterSecretStore
-      key: /viti-network-policies-ssi # Path to the secret in Vault
-      property: SPLUNK_TOKEN          # Property name within the secret to use as the token
+  namToken: ""       # Property name within the secret to use as the token
+  splunkToken: ""    # Property name within the secret to use as the token
 
 workspace: dcn-viti-network-policies-ssi

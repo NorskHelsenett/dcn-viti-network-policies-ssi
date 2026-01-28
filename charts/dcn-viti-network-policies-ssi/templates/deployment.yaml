@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dcn-viti-network-policies-ssi-deployment-{{ .Values.settings.infrastructure }}
-  namespace: ssi
+  name: viti-network-policies-ssi-deployment
+  namespace: {{ .Values.namespace | default "ssi" }}
   labels:
-    app: dcn-viti-network-policies-ssi-{{ .Values.settings.infrastructure }}
+    app: viti-network-policies-ssi
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dcn-viti-network-policies-ssi-{{ .Values.settings.infrastructure }}
+      app: viti-network-policies-ssi
   template:
     metadata:
       labels:
-        app: dcn-viti-network-policies-ssi-{{ .Values.settings.infrastructure }}
+        app: viti-network-policies-ssi
     spec:
       restartPolicy: Always
       containers:
-        - name: dcn-viti-network-policies-ssi-{{ .Values.settings.infrastructure }}
+        - name: viti-network-policies-ssi
           imagePullPolicy: Always
           image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           securityContext:
@@ -51,10 +51,10 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: dcn-viti-network-policies-ssi-{{ .Values.settings.infrastructure }}-config
+            name: viti-network-policies-ssi-config
         - name: credentials
           secret:
-            secretName: dcn-viti-network-policies-ssi-{{ .Values.settings.infrastructure }}-secrets
+            secretName: viti-network-policies-ssi-secrets
         - name: logs
           emptyDir:
             sizeLimit: 50Mi
