@@ -164,8 +164,10 @@ export const processVitiNetworkPolicy = async (
         `https://token:${gitEndpoint.key}@`,
       );
 
+      const repoDir = Deno.env.get("REPO_DIR");
+
       const gitOptions: Partial<SimpleGitOptions> = {
-        baseDir: "/app/tmp/" + repoNameMatch[1],
+        baseDir: `${repoDir}/${repoNameMatch[1]}`,
         binary: "git",
         maxConcurrentProcesses: 6,
       };
@@ -173,7 +175,8 @@ export const processVitiNetworkPolicy = async (
       // If the repo isn't cloned prepare the repo
 
       try {
-        await Deno.stat(`/app/tmp/${repoNameMatch[1]}`);
+        await Deno.stat(`
+          ${repoDir}/${repoNameMatch[1]}`);
         // console.log(
         //   `Git repository ${repoNameMatch[1]} already exists locally.`,
         // );
@@ -216,29 +219,29 @@ export const processVitiNetworkPolicy = async (
       // Ensure directories exist
       try {
         await Deno.stat(
-          `/app/tmp/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
+          `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
         );
       } catch {
         await Deno.mkdir(
-          `/app/tmp/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
+          `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
         );
       }
 
       try {
-        await Deno.stat(`/app/tmp/${repoNameMatch[1]}/ciliumGroups`);
+        await Deno.stat(`${repoDir}/${repoNameMatch[1]}/ciliumGroups`);
       } catch {
-        await Deno.mkdir(`/app/tmp/${repoNameMatch[1]}/ciliumGroups`);
+        await Deno.mkdir(`${repoDir}/${repoNameMatch[1]}/ciliumGroups`);
       }
 
       // Write files
       const fileName = `${vitiNetworkPolicy.name}.yaml`;
       await Deno.writeTextFile(
-        `/app/tmp/${repoNameMatch[1]}/kubernetesNetworkPolicies/${fileName}`,
+        `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies/${fileName}`,
         YAML.stringify(kubernetesNetworkPolicyJSON),
       );
 
       await Deno.writeTextFile(
-        `/app/tmp/${repoNameMatch[1]}/ciliumGroups/${fileName}`,
+        `${repoDir}/${repoNameMatch[1]}/ciliumGroups/${fileName}`,
         YAML.stringify(ciliumGroupJSON),
       );
 
