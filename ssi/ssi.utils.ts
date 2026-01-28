@@ -165,7 +165,7 @@ export const processVitiNetworkPolicy = async (
       );
 
       const gitOptions: Partial<SimpleGitOptions> = {
-        baseDir: "/tmp/" + repoNameMatch[1],
+        baseDir: "/app/tmp/" + repoNameMatch[1],
         binary: "git",
         maxConcurrentProcesses: 6,
       };
@@ -173,7 +173,7 @@ export const processVitiNetworkPolicy = async (
       // If the repo isn't cloned prepare the repo
 
       try {
-        await Deno.stat(`/tmp/${repoNameMatch[1]}`);
+        await Deno.stat(`/app/tmp/${repoNameMatch[1]}`);
         // console.log(
         //   `Git repository ${repoNameMatch[1]} already exists locally.`,
         // );
@@ -215,26 +215,30 @@ export const processVitiNetworkPolicy = async (
 
       // Ensure directories exist
       try {
-        await Deno.stat(`/tmp/${repoNameMatch[1]}/kubernetesNetworkPolicies`);
+        await Deno.stat(
+          `/app/tmp/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
+        );
       } catch {
-        await Deno.mkdir(`/tmp/${repoNameMatch[1]}/kubernetesNetworkPolicies`);
+        await Deno.mkdir(
+          `/app/tmp/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
+        );
       }
 
       try {
-        await Deno.stat(`/tmp/${repoNameMatch[1]}/ciliumGroups`);
+        await Deno.stat(`/app/tmp/${repoNameMatch[1]}/ciliumGroups`);
       } catch {
-        await Deno.mkdir(`/tmp/${repoNameMatch[1]}/ciliumGroups`);
+        await Deno.mkdir(`/app/tmp/${repoNameMatch[1]}/ciliumGroups`);
       }
 
       // Write files
       const fileName = `${vitiNetworkPolicy.name}.yaml`;
       await Deno.writeTextFile(
-        `/tmp/${repoNameMatch[1]}/kubernetesNetworkPolicies/${fileName}`,
+        `/app/tmp/${repoNameMatch[1]}/kubernetesNetworkPolicies/${fileName}`,
         YAML.stringify(kubernetesNetworkPolicyJSON),
       );
 
       await Deno.writeTextFile(
-        `/tmp/${repoNameMatch[1]}/ciliumGroups/${fileName}`,
+        `/app/tmp/${repoNameMatch[1]}/ciliumGroups/${fileName}`,
         YAML.stringify(ciliumGroupJSON),
       );
 
