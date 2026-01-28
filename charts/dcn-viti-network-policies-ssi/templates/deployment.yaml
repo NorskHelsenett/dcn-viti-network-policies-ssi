@@ -17,6 +17,30 @@ spec:
         app: viti-network-policies-ssi
     spec:
       restartPolicy: Always
+      initContainers:
+      - name: k8s-secret-scribe
+        securityContext:
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+          privileged: false
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 101
+          runAsGroup: 101
+          readOnlyRootFilesystem: true
+        image: ncr.sky.nhn.no/dcn/k8s-secret-scribe:latest
+        command:
+          - /bin/sh
+          - /scripts/k8s-secret-scribe.sh
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: secrets
+          mountPath: /secrets/secrets
+          readOnly: false
       containers:
         - name: viti-network-policies-ssi
           imagePullPolicy: Always
@@ -35,11 +59,14 @@ spec:
             - name: config
               mountPath: /app/config
               readOnly: true
-            - name: credentials
+            - name: secrets
               mountPath: /app/secrets
               readOnly: true
             - name: logs
               mountPath: /app/logs
+              readOnly: false
+            - name: tmp
+              mountPath: /tmp
               readOnly: false
           resources:
             requests:
@@ -52,10 +79,13 @@ spec:
         - name: config
           configMap:
             name: viti-network-policies-ssi-config
-        - name: credentials
+        - name: secrets
           secret:
             secretName: viti-network-policies-ssi-secrets
         - name: logs
+          emptyDir:
+            sizeLimit: 50Mi
+        - name: tmp
           emptyDir:
             sizeLimit: 50Mi
 {{- end -}}
