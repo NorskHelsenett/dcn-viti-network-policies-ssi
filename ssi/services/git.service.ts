@@ -1,4 +1,5 @@
 import { simpleGit, SimpleGitOptions } from "simple-git";
+import logger from "../loggers/logger.ts";
 
 export const prepareGitRepo = async (
   gitOptions: Partial<SimpleGitOptions>,
@@ -6,7 +7,7 @@ export const prepareGitRepo = async (
   repoUrlWithKey: string,
 ) => {
   try {
-    console.log("Preparing Git repo at:", gitOptions);
+    logger.info("Preparing Git repository...");
     await Deno.mkdir(gitOptions.baseDir as string);
     const git = simpleGit(gitOptions);
     await git.clone(repoUrlWithKey, gitOptions.baseDir as string);
