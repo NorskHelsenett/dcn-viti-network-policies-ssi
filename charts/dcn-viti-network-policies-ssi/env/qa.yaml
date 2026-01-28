@@ -27,5 +27,4 @@ integration:
 credentials:
   namToken: "{{ .Values.credentials.namToken }}"
   splunkToken: "{{ .Values.credentials.splunkToken }}"
-  ipamToken: "{{ .Values.credentials.ipamToken }}"
 workspace: ssi
