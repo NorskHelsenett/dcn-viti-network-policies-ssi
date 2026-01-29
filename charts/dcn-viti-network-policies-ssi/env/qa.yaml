@@ -28,12 +28,18 @@ credentials:
 
 alarmathan:
   enable: true
-  environment: qa
-  cluster: mos3-k8s-qa-001
-  criticality: Lav
-  severity: Lav
-  service_id: 917
-  team: Team Datasenter-Nettverk (Forretningsområde Skytjenester)
-  varseltilos: test
+  metadata:
+    labels:
+      release: kube-prometheus-stack
+  labels:
+    app: viti-network-policies-ssi
+    environment: qa
+    cluster: mos3-k8s-qa-001
+    criticality: Lav
+    severity: Lav
+    service_id: 917
+    team: Team Datasenter-Nettverk (Forretningsområde Skytjenester)
+    varseltilos: test
+    namespace: kube-prometheus-stack
 
 workspace: viti-network-policies-ssi

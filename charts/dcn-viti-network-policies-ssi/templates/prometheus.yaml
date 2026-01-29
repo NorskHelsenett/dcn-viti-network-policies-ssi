@@ -5,38 +5,38 @@ metadata:
   annotations:
     prometheus-operator-validated: "true"
   labels:
-    release: kube-prometheus-stack
+    release: {{ .Values.alarmathan.metadata.labels.release }}
   name: viti-network-policies-ssi-prometheus-rules
   namespace: {{ .Values.namespace }}
 spec:
   groups:
     - name: viti-network-policies-ssi.pod.health
-    rules:
-    - alert: VITI_NETWORK_POLICIES_SSI_DEPLOYMENT_DOWN
+      rules:
+      - alert: VITI_NETWORK_POLICIES_SSI_DEPLOYMENT_DOWN
         annotations:
-        summary: VITI Network Policies SSI is down (0 available replicas)
-        description: Deployment viti-network-policies-ssi-deployment has 0 available replicas in {{`{{ $labels.namespace }}`}}.
+          summary: VITI Network Policies SSI is down (0 available replicas)
+          description: Deployment viti-network-policies-ssi-deployment has 0 available replicas in {{`{{ $labels.namespace }}`}}. - https://confluence.nhn.no/x/C7V-Gw
         expr: |
-            kube_deployment_status_replicas_available{
-                namespace="{{ .Values.namespace }}",
-                deployment="viti-network-policies-ssi-deployment"
-            } < 1
+          kube_deployment_status_replicas_available{
+            namespace="{{ .Values.namespace }}",
+            deployment="viti-network-policies-ssi-deployment"
+          } < 1
         for: 5m
         labels:
-        app: viti-network-policies-ssi
-        cluster: {{ .Values.alarmathan.cluster }}
-        criticality: {{ .Values.alarmathan.criticality }}
-        environment: {{ .Values.alarmathan.environment }}
-        namespace: kube-prometheus-stack
-        severity: {{ .Values.alarmathan.severity }}
-        service_id: {{ .Values.alarmathan.service_id | quote }}
-        team: {{ .Values.alarmathan.team }}
-        varseltilos: {{ .Values.alarmathan.varseltilos }}
+          app: {{ .Values.alarmathan.labels.app }}
+          cluster: {{ .Values.alarmathan.labels.cluster }}
+          criticality: {{ .Values.alarmathan.labels.criticality }}
+          environment: {{ .Values.alarmathan.labels.environment }}
+          namespace: {{ .Values.alarmathan.labels.namespace }}
+          severity: {{ .Values.alarmathan.labels.severity }}
+          service_id: {{ .Values.alarmathan.labels.service_id | quote }}
+          team: {{ .Values.alarmathan.labels.team }}
+          varseltilos: {{ .Values.alarmathan.labels.varseltilos }}
 
     - alert: VITI_NETWORK_POLICIES_SSI_POD_NOT_READY
         annotations:
         summary: VITI Network Policies SSI pod is not Ready
-        description: Pod {{`{{ $labels.pod }}`}} in {{`{{ $labels.namespace }}`}} has not been Ready for 5 minutes.
+        description: Pod {{`{{ $labels.pod }}`}} in {{`{{ $labels.namespace }}`}} has not been Ready for 5 minutes. - https://confluence.nhn.no/x/C7V-Gw
         expr: |
             min by (namespace, pod) (
                 kube_pod_status_ready{
@@ -47,20 +47,20 @@ spec:
             ) == 0
         for: 5m
         labels:
-        app: viti-network-policies-ssi
-        cluster: {{ .Values.alarmathan.cluster }}
-        criticality: {{ .Values.alarmathan.criticality }}
-        environment: {{ .Values.alarmathan.environment }}
-        namespace: kube-prometheus-stack
-        severity: {{ .Values.alarmathan.severity }}
-        service_id: {{ .Values.alarmathan.service_id | quote }}
-        team: {{ .Values.alarmathan.team }}
-        varseltilos: {{ .Values.alarmathan.varseltilos }}
+          app: {{ .Values.alarmathan.labels.app }}
+          cluster: {{ .Values.alarmathan.labels.cluster }}
+          criticality: {{ .Values.alarmathan.labels.criticality }}
+          environment: {{ .Values.alarmathan.labels.environment }}
+          namespace: {{ .Values.alarmathan.labels.namespace }}
+          severity: {{ .Values.alarmathan.labels.severity }}
+          service_id: {{ .Values.alarmathan.labels.service_id | quote }}
+          team: {{ .Values.alarmathan.labels.team }}
+          varseltilos: {{ .Values.alarmathan.labels.varseltilos }}
 
     - alert: VITI_NETWORK_POLICIES_SSI_CONTAINER_WAITING
         annotations:
         summary: VITI Network Policies SSI container waiting (CrashLoop/ImagePull/etc)
-        description: Pod {{`{{ $labels.pod }}`}} waiting reason={{`{{ $labels.reason }}`}}.
+        description: Pod {{`{{ $labels.pod }}`}} waiting reason={{`{{ $labels.reason }}`}}. - https://confluence.nhn.no/x/C7V-Gw
         expr: |
             max by (namespace, pod, reason) (
                 kube_pod_container_status_waiting_reason{
@@ -71,15 +71,15 @@ spec:
             ) == 1
         for: 5m
         labels:
-        app: viti-network-policies-ssi
-        cluster: {{ .Values.alarmathan.cluster }}
-        criticality: {{ .Values.alarmathan.criticality }}
-        environment: {{ .Values.alarmathan.environment }}
-        namespace: kube-prometheus-stack
-        severity: {{ .Values.alarmathan.severity }}
-        service_id: {{ .Values.alarmathan.service_id | quote }}
-        team: {{ .Values.alarmathan.team }}
-        varseltilos: {{ .Values.alarmathan.varseltilos }}
+          app: {{ .Values.alarmathan.labels.app }}
+          cluster: {{ .Values.alarmathan.labels.cluster }}
+          criticality: {{ .Values.alarmathan.labels.criticality }}
+          environment: {{ .Values.alarmathan.labels.environment }}
+          namespace: {{ .Values.alarmathan.labels.namespace }}
+          severity: {{ .Values.alarmathan.labels.severity }}
+          service_id: {{ .Values.alarmathan.labels.service_id | quote }}
+          team: {{ .Values.alarmathan.labels.team }}
+          varseltilos: {{ .Values.alarmathan.labels.varseltilos }}
 
 #   - name: pod.errors
 #     rules:
@@ -98,13 +98,13 @@ spec:
 #         ) >= 3
 #       for: 0m
 #       labels:
-#         app:  viti-network-policies-ssi
-#         cluster: {{ .Values.alarmathan.cluster }}
-#         criticality: {{ .Values.alarmathan.criticality }}
-#         environment: {{ .Values.alarmathan.environment }}
-#         namespace: kube-prometheus-stack
-#         severity: {{ .Values.alarmathan.severity }}
-#         service_id: {{ .Values.alarmathan.service_id | quote }}
-#         team: {{ .Values.alarmathan.team }}
-#         varseltilos: {{ .Values.alarmathan.varseltilos }}
+#         app:  {{ .Values.alarmathan.labels.app }}
+#         cluster: {{ .Values.alarmathan.labels.cluster }}
+#         criticality: {{ .Values.alarmathan.labels.criticality }}
+#         environment: {{ .Values.alarmathan.labels.environment }}
+#         namespace: {{ .Values.alarmathan.labels.namespace }}
+#         severity: {{ .Values.alarmathan.labels.severity }}
+#         service_id: {{ .Values.alarmathan.labels.service_id | quote }}
+#         team: {{ .Values.alarmathan.labels.team }}
+#         varseltilos: {{ .Values.alarmathan.labels.varseltilos }}
 {{ end }}
