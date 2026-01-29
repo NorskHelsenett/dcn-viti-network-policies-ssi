@@ -5,7 +5,7 @@ metadata:
   annotations:
     prometheus-operator-validated: "true"
   labels:
-    release: prometheus
+    release: kube-prometheus-stack
   name: viti-network-policies-ssi-prometheus-rules
   namespace: {{ .Values.namespace }}
 spec:
@@ -31,7 +31,7 @@ spec:
         cluster: {{ .Values.alarmathan.cluster }}
         criticality: {{ .Values.alarmathan.criticality }}
         environment: {{ .Values.alarmathan.environment }}
-        namespace: prometheus-operator
+        namespace: kube-prometheus-stack
         severity: {{ .Values.alarmathan.severity }}
         service_id: {{ .Values.alarmathan.service_id | quote }}
         team: {{ .Values.alarmathan.team }}
