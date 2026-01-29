@@ -62,13 +62,26 @@ spec:
           summary: VITI Network Policies SSI container waiting (CrashLoop/ImagePull/etc)
           description: Pod {{`{{ $labels.pod }}`}} waiting reason={{`{{ $labels.reason }}`}}. - https://confluence.nhn.no/x/C7V-Gw
         expr: |
-          max by (namespace, pod, reason) (
-            kube_pod_container_status_waiting_reason{
-              namespace="{{ .Values.namespace }}",
-              pod=~"viti-network-policies-ssi-deployment-.*",
-              reason=~"CrashLoopBackOff|ImagePullBackOff|ErrImagePull|CreateContainerConfigError"
-            }
-          ) == 1
+          (
+            max by (namespace, pod, reason) (
+              kube_pod_container_status_waiting_reason{
+                namespace="{{ .Values.namespace }}",
+                pod=~"viti-network-policies-ssi-deployment-.*",
+                reason=~"CrashLoopBackOff|ImagePullBackOff|ErrImagePull|CreateContainerConfigError"
+              }
+            ) == 1
+          )
+          or
+          (
+            sum by (namespace, pod) (
+              increase(
+                kube_pod_container_status_restarts_total{
+                  namespace="{{ .Values.namespace }}",
+                  pod=~"viti-network-policies-ssi-deployment-.*"
+                }[5m]
+              )
+            ) > 0
+          )
         for: 5m
         labels:
           app: {{ .Values.alarmathan.labels.app }}
