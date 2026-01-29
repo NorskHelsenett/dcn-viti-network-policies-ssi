@@ -173,7 +173,7 @@ const getGroupMemberIPs = async (
     ).catch(
       (error: HTTPError) => {
         logger.error(
-          `dcn-viti-network-policies-ssi: Could not retrieve group member ip addresses from NSX for policy path ${policyPath} ${nsx?.getHostname()} due to ${error.message}`,
+          `viti-network-policies-ssi: Could not retrieve group member ip addresses from NSX for policy path ${policyPath} ${nsx?.getHostname()} due to ${error.message}`,
           {
             component: "nsx.service",
             method: "getGroupMemberIPs",

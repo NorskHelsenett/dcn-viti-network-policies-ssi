@@ -228,7 +228,7 @@ export const processVitiNetworkPolicy = async (
         await git.commit(`Update ${fileName}`);
         await git.push("origin", gitBranch);
         logger.info(
-          `dcn-viti-network-policies-ssi: ${fileName} pushed to branch ${gitBranch} on ${repoName}`,
+          `viti-network-policies-ssi: ${fileName} pushed to branch ${gitBranch} on ${repoName}`,
         );
       }
     }

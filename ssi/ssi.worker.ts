@@ -64,7 +64,7 @@ export class SSIWorker {
       if (!this.isRunning) {
         this._running = true;
         logger.debug(
-          "dcn-viti-network-policies-ssi: Worker running task...",
+          "viti-network-policies-ssi: Worker running task...",
         );
 
         const nam = SSIWorker._nms;
@@ -92,7 +92,7 @@ export class SSIWorker {
         this._running = false;
         this._run_counter += 1;
         logger.debug(
-          "dcn-viti-network-policies-ssi: Worker task completed...",
+          "viti-network-policies-ssi: Worker task completed...",
           {
             component: "worker",
             method: "work",
@@ -100,12 +100,12 @@ export class SSIWorker {
         );
         // This shall be a console log, as we´re only interested in number of runs completed, and not logging them.
         console.log(
-          `dcn-viti-network-policies-ssi: Completed run number ${this._run_counter}`,
+          `viti-network-policies-ssi: Completed run number ${this._run_counter}`,
         );
         return 0;
       } else {
         logger.warning(
-          "dcn-viti-network-policies-ssi: Worker task already running...",
+          "viti-network-policies-ssi: Worker task already running...",
           {
             component: "worker",
             method: "work",

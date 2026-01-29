@@ -20,7 +20,7 @@ integration:
   splunk:
     url: "https://splunk-hec.nhn.no"
     index: "dc_nam"
-    source: "dcn-viti-network-policies-ssi:qa"
+    source: "viti-network-policies-ssi:qa"
 
 credentials:
   namToken: "{{ .Values.credentials.namToken }}"

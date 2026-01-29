@@ -1,8 +1,8 @@
 services:
-  dcn-viti-network-policies-ssi:
+  viti-network-policies-ssi:
     build: .
-    container_name: dcn-viti-network-policies-ssi
-    image: dcn-viti-network-policies-ssi
+    container_name: viti-network-policies-ssi
+    image: viti-network-policies-ssi
     user: "1993:1993"
     environment:
       - SECRETS_PATH=/app/secrets/secrets.yaml

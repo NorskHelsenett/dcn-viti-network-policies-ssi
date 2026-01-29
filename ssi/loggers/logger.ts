@@ -55,7 +55,7 @@ const FILELOG_DAYS = Deno.env.get("FILELOG_DAYS")
 const SPLUNK_INDEX = Deno.env.get("SPLUNK_INDEX") ?? undefined;
 const SPLUNK_SOURCE = Deno.env.get("SPLUNK_SOURCE") ?? "ssi";
 const SPLUNK_SOURCE_TYPE = Deno.env.get("SPLUNK_SOURCE_TYPE") ??
-  "dcn-viti-network-policies-ssi";
+  "viti-network-policies-ssi";
 envLoader.close();
 /**
  * Determines log level based on environment mode
@@ -155,7 +155,7 @@ const logger = winston.createLogger({
 
 logger.on("error", (error: Error) => {
   logger.warning(
-    `dcn-viti-network-policies-ssi: Error in logger ${error.message}`,
+    `viti-network-policies-ssi: Error in logger ${error.message}`,
     {
       component: "logger",
       method: "winston.createLogger",
@@ -190,7 +190,7 @@ const addHecLogger = () => {
   } catch (error) {
     console.log("Catching error");
     logger.error(
-      `dcn-viti-network-policies-ssi: Error on WinstonHecLogger,  ${
+      `viti-network-policies-ssi: Error on WinstonHecLogger,  ${
         (error as Error).message
       }`,
       {
@@ -216,7 +216,7 @@ export const removeHecLogger = () => {
     }
   } catch (error) {
     logger.error(
-      `dcn-viti-network-policies-ssi: Error on removeHecLogger,  ${
+      `viti-network-policies-ssi: Error on removeHecLogger,  ${
         (error as Error).message
       }`,
       {
@@ -326,7 +326,7 @@ export const addFileLoggers = () => {
     }
   } catch (error) {
     logger.error(
-      `dcn-viti-network-policies-ssi: Error on FileLogger,  ${
+      `viti-network-policies-ssi: Error on FileLogger,  ${
         (error as Error).message
       }`,
       {
@@ -363,7 +363,7 @@ export const removeFileLoggers = () => {
     }
   } catch (error) {
     logger.error(
-      `dcn-viti-network-policies-ssi: Error on removeFileLogger,  ${
+      `viti-network-policies-ssi: Error on removeFileLogger,  ${
         (error as Error).message
       }`,
       {
@@ -402,7 +402,7 @@ export const addSplunkFileLogger = () => {
     }
   } catch (error) {
     logger.error(
-      `dcn-viti-network-policies-ssi: Error on SplunkFileLogger,  ${
+      `viti-network-policies-ssi: Error on SplunkFileLogger,  ${
         (error as Error).message
       }`,
       {
@@ -426,7 +426,7 @@ export const removeSplunkFileLogger = () => {
     }
   } catch (error) {
     logger.error(
-      `dcn-viti-network-policies-ssi: Error on removeSplunkFileLogger,  ${
+      `viti-network-policies-ssi: Error on removeSplunkFileLogger,  ${
         (error as Error).message
       }`,
       {
@@ -445,7 +445,7 @@ addHecLogger();
 addFileLoggers();
 
 logger.debug(
-  `dcn-viti-network-policies-ssi: Logger initialized at ${logLevel()} level`,
+  `viti-network-policies-ssi: Logger initialized at ${logLevel()} level`,
 );
 
 export default logger;

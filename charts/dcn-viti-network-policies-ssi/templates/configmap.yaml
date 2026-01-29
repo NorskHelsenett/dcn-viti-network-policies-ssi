@@ -16,4 +16,4 @@ data:
     SPLUNK_URL: {{ .Values.integration.splunk.url | quote }}
     SPLUNK_INDEX: {{ .Values.integration.splunk.index | quote }}
     SPLUNK_SOURCE: {{ .Values.integration.splunk.source | quote }}
-    SPLUNK_SOURCE_TYPE: "dcn-viti-network-policies-ssi"
+    SPLUNK_SOURCE_TYPE: "viti-network-policies-ssi"

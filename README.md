@@ -85,8 +85,8 @@ NAM_URL: "https://nam.example.com/api" # NAM API endpoint URL
 # Splunk logging settings
 SPLUNK_URL: "https://splunk.example.com" # Splunk HEC endpoint
 SPLUNK_INDEX: "network_automation" # Target Splunk index
-SPLUNK_SOURCE: "dcn-viti-network-policies-ssi:qa" # Log source identifier
-SPLUNK_SOURCE_TYPE: "dcn-viti-network-policies-ssi" # Source type
+SPLUNK_SOURCE: "viti-network-policies-ssi:qa" # Log source identifier
+SPLUNK_SOURCE_TYPE: "viti-network-policies-ssi" # Source type
 ```
 
 ### secrets.yaml
@@ -114,8 +114,8 @@ export NAM_TOKEN="your-jwt-token-here"
 export SPLUNK_URL="https://splunk.example.com"
 export SPLUNK_TOKEN="your-splunk-hec-token"
 export SPLUNK_INDEX="network_automation"
-export SPLUNK_SOURCE="dcn-viti-network-policies-ssi"
-export SPLUNK_SOURCE_TYPE="dcn-viti-network-policies-ssi"
+export SPLUNK_SOURCE="viti-network-policies-ssi"
+export SPLUNK_SOURCE_TYPE="viti-network-policies-ssi"
 ```
 
 ## Usage

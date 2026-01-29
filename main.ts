@@ -45,16 +45,16 @@ const start = async (): Promise<void> => {
     const ssiWorker = new SSIWorker();
     if (Deno.env.get("CRON_MODE") !== "true") {
       logger.info(
-        `dcn-viti-network-policies-ssi: Initializing worker on ${Deno.hostname()}`,
+        `viti-network-policies-ssi: Initializing worker on ${Deno.hostname()}`,
       );
       await ssiWorker.work();
       logger.debug(
-        `dcn-viti-network-policies-ssi: Waiting to flush logs before exiting.`,
+        `viti-network-policies-ssi: Waiting to flush logs before exiting.`,
       );
       Deno.exit(0);
     } else {
       logger.info(
-        `dcn-viti-network-policies-ssi: Initializing worker on ${Deno.hostname()} running every ${SSI_INTERVAL} seconds...`,
+        `viti-network-policies-ssi: Initializing worker on ${Deno.hostname()} running every ${SSI_INTERVAL} seconds...`,
       );
       await ssiWorker.work();
       INTERVAL_ID = setInterval(async () => {
@@ -67,7 +67,7 @@ const start = async (): Promise<void> => {
     }
     if (error instanceof Error) {
       logger.error(
-        `dcn-viti-network-policies-ssi: Error occurred on ${Deno.hostname()}, ${error.message}`,
+        `viti-network-policies-ssi: Error occurred on ${Deno.hostname()}, ${error.message}`,
         {
           component: "main",
           method: "start",
@@ -76,7 +76,7 @@ const start = async (): Promise<void> => {
       );
     } else {
       logger.error(
-        `dcn-viti-network-policies-ssi: Unknown error occurred on ${Deno.hostname()}`,
+        `viti-network-policies-ssi: Unknown error occurred on ${Deno.hostname()}`,
         {
           component: "main",
           method: "start",

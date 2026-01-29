@@ -9,7 +9,6 @@ helm install dcn-viti-network-policies-ssi-prod ./charts/dcn-viti-network-polici
   -f charts/dcn-viti-network-policies-ssi/env/prod.yaml \
   --set credentials.namToken="your-nam-token" \
   --set credentials.splunkToken="your-splunk-token" \
-  --set credentials.ipamToken="your-ipam-token"
 ```
 
 ## Mandatory Parameters
@@ -67,13 +66,13 @@ helm install dcn-viti-network-policies-ssi-prod ./charts/dcn-viti-network-polici
 
 ### Integration Settings
 
-| Variable                    | Description              | Default                              |
-| --------------------------- | ------------------------ | ------------------------------------ |
-| `integration.nam.url`       | NAM API endpoint URL     | `""`                                 |
-| `integration.ipam.url`      | IPAM API endpoint URL    | `""`                                 |
-| `integration.splunk.url`    | Splunk HEC endpoint      | `https://splunk-hec.nhn.no`          |
-| `integration.splunk.index`  | Splunk index name        | `dc_nam`                             |
-| `integration.splunk.source` | Splunk source identifier | `dcn-viti-network-policies-ssi:prod` |
+| Variable                    | Description                   | Default                              |
+| --------------------------- | ----------------------------- | ------------------------------------ |
+| `integration.nam.url`       | NAM API endpoint URL          | `""`                                 |
+| `integration.git.repoDir`   | Path to where cloned repos go | `/app/tmp`                           |
+| `integration.splunk.url`    | Splunk HEC endpoint           | `https://splunk-hec.nhn.no`          |
+| `integration.splunk.index`  | Splunk index name             | `dc_nam`                             |
+| `integration.splunk.source` | Splunk source identifier      | `dcn-viti-network-policies-ssi:prod` |
 
 ### Credentials (Mandatory)
 
@@ -92,7 +91,6 @@ helm install dcn-viti-network-policies-ssi-prod ./charts/dcn-viti-network-polici
   -f charts/dcn-viti-network-policies-ssi/env/prod.yaml \
   --set credentials.namToken="prod-token-here" \
   --set credentials.splunkToken="prod-splunk-token"
-  --set credentials.ipamToken="your-ipam-token"
 ```
 
 Creates CronJob: `dcn-viti-network-policies-ssi-prod` in namespace `ssi`
@@ -104,7 +102,6 @@ helm install dcn-viti-network-policies-ssi-qa ./charts/dcn-viti-network-policies
   -f charts/dcn-viti-network-policies-ssi/env/qa.yaml \
   --set credentials.namToken="qa-token-here" \
   --set credentials.splunkToken="qa-splunk-token"
-  --set credentials.ipamToken="your-ipam-token"
 ```
 
 Creates CronJob: `dcn-viti-network-policies-ssi-qa` in namespace `ssi`
@@ -116,7 +113,6 @@ helm install dcn-viti-network-policies-ssi-test ./charts/dcn-viti-network-polici
   -f charts/dcn-viti-network-policies-ssi/env/test.yaml \
   --set credentials.namToken="test-token-here" \
   --set credentials.splunkToken="test-splunk-token"
-  --set credentials.ipamToken="your-ipam-token"
 ```
 
 Creates CronJob: `dcn-viti-network-policies-ssi-test` in namespace `ssi`
@@ -129,7 +125,6 @@ helm install dcn-viti-network-policies-ssi-prod ./charts/dcn-viti-network-polici
   --set schedule="0 */2 * * *" \
   --set credentials.namToken="token" \
   --set credentials.splunkToken="splunk-token"
-  --set credentials.ipamToken="your-ipam-token"
 ```
 
 ## Environment-Specific Values
@@ -151,7 +146,6 @@ helm install dcn-viti-network-policies-ssi-{infrastructure} ./charts/dcn-viti-ne
   -f charts/dcn-viti-network-policies-ssi/env/{infrastructure}.yaml \
   --set credentials.namToken="token" \
   --set credentials.splunkToken="splunk-token"
-  --set credentials.ipamToken="your-ipam-token"
 
 # Upgrade
 helm upgrade dcn-viti-network-policies-ssi-{infrastructure} ./charts/dcn-viti-network-policies-ssi \
@@ -165,7 +159,6 @@ helm template dcn-viti-network-policies-ssi-test ./charts/dcn-viti-network-polic
   -f charts/dcn-viti-network-policies-ssi/env/test.yaml \
   --set credentials.namToken="test" \
   --set credentials.splunkToken="test"
-  --set credentials.ipamToken="your-ipam-token"
 
 # Validate
 helm lint ./charts/dcn-viti-network-policies-ssi
@@ -254,10 +247,8 @@ argocd app create dcn-viti-network-policies-ssi-qa \
 
 - `continuousMode=false` creates one-shot CronJob execution (default)
 - `continuousMode=true` enables continuous mode (not recommended for CronJobs)
-- CronJob naming pattern: `dcn-viti-network-policies-ssi-{infrastructure}`
-- ConfigMap naming pattern:
-  `dcn-viti-network-policies-ssi-{infrastructure}-config`
-- Secret naming pattern:
-  `dcn-viti-network-policies-ssi-{infrastructure}-secrets`
+- CronJob naming pattern: `viti-network-policies-ssi-{infrastructure}`
+- ConfigMap naming pattern: `viti-network-policies-ssi-config`
+- Secret naming pattern: `viti-network-policies-ssi-secrets`
 - Security context runs as non-root user (UID/GID 1993)
 - Read-only root filesystem with writable logs volume
