@@ -7,17 +7,15 @@ import {
   NetboxPrefix,
   VMwareNSXDriver,
 } from "@norskhelsenett/zeniki";
-// import logger from "./loggers/logger.ts";
 import ipaddr from "ipaddr.js";
 import { Validator } from "ip-num";
-// import { SSIWorker } from "./ssi.worker.ts";
 import {
   getGroupIPAddresses,
   getVMIPAddresses,
 } from "./services/nsx.service.ts";
 import logger from "./loggers/logger.ts";
 import { simpleGit, SimpleGitOptions } from "simple-git";
-import { prepareGitRepo } from "./services/git.service.ts";
+import { initializeGitRepository } from "./services/git.service.ts";
 import YAML from "yaml";
 
 interface K8SNetworkPolicyIPBlock {
@@ -30,7 +28,7 @@ export const processVitiNetworkPolicy = async (
   vitiNetworkPolicy: NAMVitiNetworkPolicy,
 ) => {
   try {
-    console.log(`Processing policy ${vitiNetworkPolicy.name}...`);
+    logger.debug(`Processing policy ${vitiNetworkPolicy.name}...`);
 
     // Get IPAM prefixes
     const ipam = configureIPAM(
@@ -48,7 +46,7 @@ export const processVitiNetworkPolicy = async (
       true,
     ).catch((error: HTTPError) => {
       logger.error(
-        `Error fetching prefixes from IPAM for VITI Network Policy ${vitiNetworkPolicy.name}: ${error.message}`,
+        `viti-network-policies-ssi: Error fetching prefixes from IPAM for VITI Network Policy ${vitiNetworkPolicy.name}: ${error.message}`,
         {
           component: "ssi.utils",
           method: "processVitiNetworkPolicy",
@@ -99,7 +97,7 @@ export const processVitiNetworkPolicy = async (
       return 0;
     });
 
-    // Prepare the JSON
+    // Prepare the JSONs
     const kubernetesNetworkPolicyJSON = {
       apiVersion: "networking.k8s.io/v1",
       kind: "NetworkPolicy",
@@ -132,20 +130,14 @@ export const processVitiNetworkPolicy = async (
       },
     };
 
-    // console.log("Cilium Group JSON:", JSON.stringify(ciliumGroupJSON, null, 2));
-
-    // GIT Operations
+    // GIT
     const gitConfigs = vitiNetworkPolicy.git_configs;
 
     for (const config of gitConfigs) {
       const gitEndpoint = config.endpoint;
       const gitBranch = config.branch;
-      console.log(
-        `Preparing to commit NetworkPolicy ${vitiNetworkPolicy.name} to Git repository ${config.endpoint.name} - Branch ${config.branch}...`,
-      );
 
       if (!gitEndpoint || !gitBranch) {
-        console.log("Git endpoint or branch not defined.");
         throw new Error("Git endpoint or branch not defined.");
       }
 
@@ -153,43 +145,36 @@ export const processVitiNetworkPolicy = async (
       const repoNameMatch = gitEndpoint.url.match(gitUrlRegex);
 
       if (!repoNameMatch) {
-        console.log("Invalid Git repository URL.");
         throw new Error("Invalid Git repository URL.");
       }
 
-      // const repoName = repoNameMatch[1];
-      // const integratorRepoPath = path.join(repoDirectory, repoName);
-      const repoUrlWithKey = gitEndpoint.url.replace(
-        /^https:\/\//,
-        `https://token:${gitEndpoint.key}@`,
+      const repoName = repoNameMatch[1];
+      const repoUrl = gitEndpoint.url.replace(
+        "https://",
+        `https://token:${encodeURIComponent(gitEndpoint.key as string)}@`,
       );
 
-      const repoDir = Deno.env.get("REPO_DIR");
+      const repoDir = Deno.env.get("REPO_DIR") || "/app/tmp";
+      if (!Deno.env.get("REPO_DIR")) {
+        logger.warning(
+          `viti-network-policies-ssi: REPO_DIR not set in environment variables. Defaulting to /app/tmp`,
+        );
+      }
 
       const gitOptions: Partial<SimpleGitOptions> = {
-        baseDir: `${repoDir}/${repoNameMatch[1]}`,
+        baseDir: `${repoDir}/${repoName}`,
         binary: "git",
         maxConcurrentProcesses: 6,
       };
 
       // If the repo isn't cloned prepare the repo
       try {
-        await Deno.stat(`${repoDir}/${repoNameMatch[1]}`);
+        await Deno.stat(`${repoDir}/${repoName}`);
       } catch (_error) {
-        // console.log(
-        //   `Git repository ${
-        //     repoNameMatch[1]
-        //   } does not exist locally. Cloning...`,
-        // );
-        // console.log(error);
-        // console.log(
-        //   `Git repository ${repoNameMatch[1]} does not exist locally.`,
-        // );
-        // console.log("Running prepareGitRepo...");
-        await prepareGitRepo(
+        await initializeGitRepository(
           gitOptions,
           gitBranch,
-          repoUrlWithKey,
+          repoUrl,
         );
       }
 
@@ -220,31 +205,17 @@ export const processVitiNetworkPolicy = async (
       }
 
       // Ensure directories exist
-      try {
-        await Deno.stat(
-          `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
-        );
-      } catch {
-        await Deno.mkdir(
-          `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies`,
-        );
-      }
-
-      try {
-        await Deno.stat(`${repoDir}/${repoNameMatch[1]}/ciliumGroups`);
-      } catch {
-        await Deno.mkdir(`${repoDir}/${repoNameMatch[1]}/ciliumGroups`);
-      }
+      await ensureRequiredDirectories(repoDir, repoName);
 
       // Write files
       const fileName = `${vitiNetworkPolicy.name}.yaml`;
       await Deno.writeTextFile(
-        `${repoDir}/${repoNameMatch[1]}/kubernetesNetworkPolicies/${fileName}`,
+        `${repoDir}/${repoName}/kubernetesNetworkPolicies/${fileName}`,
         YAML.stringify(kubernetesNetworkPolicyJSON),
       );
 
       await Deno.writeTextFile(
-        `${repoDir}/${repoNameMatch[1]}/ciliumGroups/${fileName}`,
+        `${repoDir}/${repoName}/ciliumGroups/${fileName}`,
         YAML.stringify(ciliumGroupJSON),
       );
 
@@ -256,21 +227,31 @@ export const processVitiNetworkPolicy = async (
         await git.add("./*");
         await git.commit(`Update ${fileName}`);
         await git.push("origin", gitBranch);
-        logger.debug(
-          `dcn-viti-network-policies-ssi: ${fileName} pushed to branch ${gitBranch} on ${
-            repoNameMatch[1]
-          }`,
-        );
-      } else {
-        logger.debug(
-          `dcn-viti-network-policies-ssi: No changes to commit for ${fileName} on branch ${gitBranch} on ${
-            repoNameMatch[1]
-          }`,
+        logger.info(
+          `dcn-viti-network-policies-ssi: ${fileName} pushed to branch ${gitBranch} on ${repoName}`,
         );
       }
     }
   } catch (error) {
     throw error;
+  }
+};
+
+const ensureRequiredDirectories = async (repoDir: string, repoName: string) => {
+  try {
+    await Deno.stat(
+      `${repoDir}/${repoName}/kubernetesNetworkPolicies`,
+    );
+  } catch {
+    await Deno.mkdir(
+      `${repoDir}/${repoName}/kubernetesNetworkPolicies`,
+    );
+  }
+
+  try {
+    await Deno.stat(`${repoDir}/${repoName}/ciliumGroups`);
+  } catch {
+    await Deno.mkdir(`${repoDir}/${repoName}/ciliumGroups`);
   }
 };
 
@@ -339,8 +320,8 @@ export const filterLinkLocal = (ipAddresses: string[]) =>
  * Configures the VMware NSX driver with endpoint credentials
  */
 export const configureNSX = (endpoint: NAMAPIEndpoint) => {
-  const username = endpoint?.user + "";
-  const password = endpoint?.pass + "";
+  const username = endpoint?.user as string;
+  const password = endpoint?.pass as string;
   const authString = `${username}:${password}`;
   const encodedAuth = btoa(authString);
   return new VMwareNSXDriver({

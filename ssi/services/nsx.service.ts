@@ -75,7 +75,7 @@ const getGroupsFromManager = async (
       "query": `resource_type:${resourceType} AND tags.scope:${scope}`,
     }, globalManager).catch((error: HTTPError) => {
       logger.error(
-        `nam-firewall-exposed-vms-ssi: Failed to get tagged Groups from '${nsx.getHostname()}'`,
+        `nam-firewall-exposed-vms-ssi: Failed to get tagged Groups from '${nsx.getHostname()}': ${error.message}`,
         {
           component: "nsx.service",
           method: "getTaggedGroups",
@@ -140,10 +140,10 @@ const getVMsFromLM = async (
         `resource_type:VirtualMachine AND tags.scope:${scope} AND power_state:VM_RUNNING`,
     }, false).catch((error: HTTPError) => {
       logger.error(
-        `nam-firewall-exposed-vms-ssi: Failed to get tagged VMs from '${nsx.getHostname()}'`,
+        `nam-firewall-exposed-vms-ssi: Failed to get tagged VMs from '${nsx.getHostname()}': ${error.message}`,
         {
           component: "nsx.service",
-          method: "getTaggedVms",
+          method: "getVMsFromLM",
           error: isDevMode() ? error : error?.message,
         },
       );
@@ -176,7 +176,7 @@ const getGroupMemberIPs = async (
           `dcn-viti-network-policies-ssi: Could not retrieve group member ip addresses from NSX for policy path ${policyPath} ${nsx?.getHostname()} due to ${error.message}`,
           {
             component: "nsx.service",
-            method: "getGroupTagsGroupsAndMembers",
+            method: "getGroupMemberIPs",
             error: isDevMode() ? error : error.message,
           },
         );

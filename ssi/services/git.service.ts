@@ -1,33 +1,36 @@
 import { simpleGit, SimpleGitOptions } from "simple-git";
 import logger from "../loggers/logger.ts";
 
-export const prepareGitRepo = async (
+export const initializeGitRepository = async (
   gitOptions: Partial<SimpleGitOptions>,
-  branchName: string,
-  repoUrlWithKey: string,
+  targetBranch: string,
+  repoPath: string,
 ) => {
   try {
-    logger.info("Preparing Git repository...");
+    logger.info("viti-network-policies-ssi: Initializing Git repository...");
     await Deno.mkdir(gitOptions.baseDir as string);
     const git = simpleGit(gitOptions);
-    await git.clone(repoUrlWithKey, gitOptions.baseDir as string);
-    // const branchSummary = await git.fetch();
+    await git.clone(repoPath, gitOptions.baseDir as string);
     await git.fetch();
     const branches = await git.branch();
 
     // Check if the branch exists locally or remotely
     if (
-      !branches.all.includes(branchName) &&
-      !branches.all.includes(`remotes/origin/${branchName}`)
+      !branches.all.includes(targetBranch) &&
+      !branches.all.includes(`remotes/origin/${targetBranch}`)
     ) {
-      console.log("Creating new branch:", branchName);
-      await git.checkoutLocalBranch(branchName);
+      logger.info(
+        `viti-network-policies-ssi: Creating new branch '${targetBranch}'`,
+      );
+      await git.checkoutLocalBranch(targetBranch);
     } else {
-      console.log("Checking out existing branch:", branchName);
-      await git.checkout(branchName);
-      await git.pull("origin", branchName);
+      logger.info(
+        `viti-network-policies-ssi: Checking out existing branch '${targetBranch}'`,
+      );
+      await git.checkout(targetBranch);
+      await git.pull("origin", targetBranch);
     }
   } catch (error) {
-    console.log("Error preparing Git repo:", error);
+    throw error;
   }
 };
