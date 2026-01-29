@@ -28,4 +28,15 @@ credentials:
   namToken: "{{ .Values.credentials.namToken }}"
   splunkToken: "{{ .Values.credentials.splunkToken }}"
   ipamToken: "{{ .Values.credentials.ipamToken }}"
-workspace: ssi
+
+alarmathan:
+  enable: true
+  environment: prod
+  cluster: mos3-k8s-prod-001
+  criticality: Medium
+  severity: Medium
+  service_id: 917
+  team: Team Datasenter-Nettverk (Forretningsområde Skytjenester)
+  varseltilos: test
+
+workspace: viti-network-policies-ssi

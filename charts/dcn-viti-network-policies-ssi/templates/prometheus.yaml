@@ -1,0 +1,39 @@
+{{- if eq .Values.alarmathan.enable true}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  annotations:
+    prometheus-operator-validated: "true"
+  labels:
+    release: prometheus
+  name: viti-network-policies-ssi-prometheus-rules
+  namespace: {{ .Values.namespace }}
+spec:
+  groups:
+  - name: pod.errors
+    rules:
+    - alert: VITI_NETWORK_POLICIES_SSI_ALERT
+      annotations:
+        description: {{ quote "POD '{{ $labels.pod }}' in namespace '{{ $labels.namespace }}' has restarted 3 or more times in the last 5 minutes - https://confluence.nhn.no/x/C7V-Gw" | replace "\"" "" }}
+        summary: {{ quote "VITI Network Policies SSI POD has crashed 3 or more times in the last 5 minutes - POD:{{ $labels.pod }} - https://confluence.nhn.no/x/C7V-Gw" | replace "\"" "" }}
+      expr: |
+        (
+          sum by (namespace, pod) (
+            increase(kube_pod_container_status_restarts_total{
+              namespace="{{ .Values.namespace }}",
+              pod=~"viti-network-policies-ssi-deployment-.*"
+            }[5m])
+          )
+        ) >= 3
+      for: 0m
+      labels:
+        app:  viti-network-policies-ssi
+        cluster: {{ .Values.alarmathan.cluster }}
+        criticality: {{ .Values.alarmathan.criticality }}
+        environment: {{ .Values.alarmathan.environment }}
+        namespace: prometheus-operator
+        severity: {{ .Values.alarmathan.severity }}
+        service_id: {{ .Values.alarmathan.service_id | quote }}
+        team: {{ .Values.alarmathan.team }}
+        varseltilos: {{ .Values.alarmathan.varseltilos }}
+{{ end }}

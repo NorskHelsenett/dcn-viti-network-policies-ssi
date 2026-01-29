@@ -9,7 +9,7 @@ limits:
     max: "600m"
 
 settings:
-  environment: production
+  environment: development
   infrastructure: qa
   interval: 300
   continuousMode: false
@@ -25,4 +25,15 @@ integration:
 credentials:
   namToken: "{{ .Values.credentials.namToken }}"
   splunkToken: "{{ .Values.credentials.splunkToken }}"
-workspace: ssi
+
+alarmathan:
+  enable: true
+  environment: qa
+  cluster: mos3-k8s-qa-001
+  criticality: Lav
+  severity: Lav
+  service_id: 917
+  team: Team Datasenter-Nettverk (Forretningsområde Skytjenester)
+  varseltilos: test
+
+workspace: viti-network-policies-ssi

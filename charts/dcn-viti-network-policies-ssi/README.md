@@ -22,11 +22,11 @@ helm install dcn-viti-network-policies-ssi-prod ./charts/dcn-viti-network-polici
 
 ### Basic Configuration
 
-| Variable       | Description          | Default                         |
-| -------------- | -------------------- | ------------------------------- |
-| `namespace`    | Target namespace     | `ssi`                           |
-| `nameOverride` | Override chart name  | `""`                            |
-| `workspace`    | Workspace identifier | `dcn-viti-network-policies-ssi` |
+| Variable       | Description          | Default                     |
+| -------------- | -------------------- | --------------------------- |
+| `namespace`    | Target namespace     | `ssi`                       |
+| `nameOverride` | Override chart name  | `""`                        |
+| `workspace`    | Workspace identifier | `viti-network-policies-ssi` |
 
 ### Image Configuration
 

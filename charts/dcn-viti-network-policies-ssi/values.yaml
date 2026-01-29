@@ -42,8 +42,11 @@ integration:
 vault:
   enable: true
 
-credentials:
-  namToken: ""       # Property name within the secret to use as the token
-  splunkToken: ""    # Property name within the secret to use as the token
+alarmathan:
+  enable: false
 
-workspace: dcn-viti-network-policies-ssi
+credentials:
+  namToken: ""
+  splunkToken: ""
+
+workspace: viti-network-policies-ssi
