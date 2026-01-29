@@ -30,8 +30,8 @@ settings:
 integration:
   nam:
     url: ""
-  ipam:
-    url: ""
+  git:
+    repoDir: "/app/tmp"
   splunk:
     enabled: true
     url: "https://splunk-hec.nhn.no"

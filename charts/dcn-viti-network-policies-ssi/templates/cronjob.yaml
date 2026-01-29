@@ -3,7 +3,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: viti-network-policies-ssi
-  namespace: {{ .Values.namespace | default "ssi" }}
+  namespace: {{ .Values.namespace }}
 spec:
   schedule: {{ .Values.schedule | quote }}
   concurrencyPolicy: {{ .Values.allowConcurrent | ternary "Allow" "Forbid" }}
@@ -18,44 +18,77 @@ spec:
             app: viti-network-policies-ssi
         spec:
           restartPolicy: Never
-          containers:
-            - name: viti-network-policies-ssi
-              image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
-              imagePullPolicy: Always
-              securityContext:
-                runAsNonRoot: true
-                runAsUser: 1993
-                runAsGroup: 1993
-                readOnlyRootFilesystem: true
-                allowPrivilegeEscalation: false
-                capabilities:
-                  drop: ["ALL"]
-                seccompProfile:
-                  type: RuntimeDefault
-              resources:
-                requests:
-                  memory: {{ .Values.limits.memory.min }}
-                  cpu: {{ .Values.limits.cpu.min }}
-                limits:
-                  memory: {{ .Values.limits.memory.max }}
-                  cpu: {{ .Values.limits.cpu.max }}
-              volumeMounts:
-                - name: config
-                  mountPath: /app/config
-                  readOnly: true
-                - name: credentials
-                  mountPath: /app/secrets
-                  readOnly: true
-                - name: logs
-                  mountPath: /app/logs
-          volumes:
-            - name: config
-              configMap:
-                name: viti-network-policies-ssi-config
-            - name: credentials
-              secret:
-                secretName: viti-network-policies-ssi-secrets
-            - name: logs
-              emptyDir:
-                sizeLimit: 50Mi
+        initContainers:
+        - name: k8s-secret-scribe
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            privileged: false
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1993
+            runAsGroup: 1993
+            readOnlyRootFilesystem: true
+          image: ncr.sky.nhn.no/dcn/k8s-secret-scribe:latest
+          command:
+            - /bin/sh
+            - /scripts/k8s-secret-scribe.sh
+          volumeMounts:
+          - name: secrets
+            mountPath: /mount-secret-as-subfolder/secrets 
+            readOnly: false
+          - name: shared-secrets
+            mountPath: /shared-secrets 
+        containers:
+          - name: viti-network-policies-ssi
+            imagePullPolicy: Always
+            image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+            securityContext:
+              seccompProfile:
+                type: RuntimeDefault
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+              runAsNonRoot: true
+              runAsUser: 1993
+              runAsGroup: 1993
+              readOnlyRootFilesystem: true
+            volumeMounts:
+              - name: ssi-config
+                mountPath: /app/config
+                readOnly: true
+              - name: shared-secrets
+                mountPath: /app/secrets
+                readOnly: true
+              - name: logs
+                mountPath: /app/logs
+                readOnly: false
+              - name: tmp
+                mountPath: /app/tmp
+                readOnly: false
+            resources:
+              requests:
+                memory: {{ .Values.limits.memory.min }}
+                cpu: {{ .Values.limits.cpu.min }}
+              limits:
+                memory: {{ .Values.limits.memory.max }}
+                cpu: {{ .Values.limits.cpu.max }}
+        volumes:
+          - name: shared-secrets
+            emptyDir: {}
+          - name: ssi-config
+            configMap:
+              name: viti-network-policies-ssi-config
+          - name: secrets
+            secret:
+              secretName: viti-network-policies-ssi-secrets
+          - name: logs
+            emptyDir:
+              sizeLimit: 50Mi
+          - name: tmp
+            emptyDir:
+              sizeLimit: 50Mi
 {{- end -}}

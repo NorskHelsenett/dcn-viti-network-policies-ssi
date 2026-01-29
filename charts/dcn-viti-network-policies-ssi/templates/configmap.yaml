@@ -11,6 +11,7 @@ data:
     SSI_INTERVAL: {{ .Values.settings.interval | quote }}
     REQUEST_TIMEOUT: {{ .Values.settings.timeout | quote }}
     CRON_MODE: {{ .Values.settings.continuousMode | quote }}
+    REPO_DIR: {{ .Values.integration.git.repoDir | quote }}
     NAM_URL: {{ .Values.integration.nam.url | quote }}
     SPLUNK_URL: {{ .Values.integration.splunk.url | quote }}
     SPLUNK_INDEX: {{ .Values.integration.splunk.index | quote }}

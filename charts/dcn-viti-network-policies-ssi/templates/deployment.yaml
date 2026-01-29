@@ -28,19 +28,19 @@ spec:
           privileged: false
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          runAsUser: 101
-          runAsGroup: 101
+          runAsUser: 1993
+          runAsGroup: 1993
           readOnlyRootFilesystem: true
         image: ncr.sky.nhn.no/dcn/k8s-secret-scribe:latest
         command:
           - /bin/sh
           - /scripts/k8s-secret-scribe.sh
         volumeMounts:
-        - name: config
-          mountPath: /config
         - name: secrets
-          mountPath: /secrets/secrets
+          mountPath: /mount-secret-as-subfolder/secrets 
           readOnly: false
+        - name: shared-secrets
+          mountPath: /shared-secrets 
       containers:
         - name: viti-network-policies-ssi
           imagePullPolicy: Always
@@ -56,10 +56,10 @@ spec:
             runAsGroup: 1993
             readOnlyRootFilesystem: true
           volumeMounts:
-            - name: config
+            - name: ssi-config
               mountPath: /app/config
               readOnly: true
-            - name: secrets
+            - name: shared-secrets
               mountPath: /app/secrets
               readOnly: true
             - name: logs
@@ -76,7 +76,9 @@ spec:
               memory: {{ .Values.limits.memory.max }}
               cpu: {{ .Values.limits.cpu.max }}
       volumes:
-        - name: config
+        - name: shared-secrets
+          emptyDir: {}
+        - name: ssi-config
           configMap:
             name: viti-network-policies-ssi-config
         - name: secrets
