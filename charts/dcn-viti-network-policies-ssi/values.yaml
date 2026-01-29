@@ -40,7 +40,7 @@ integration:
     token:
   
 vault:
-  enable: false
+  enable: true
 
 credentials:
   namToken: ""       # Property name within the secret to use as the token
