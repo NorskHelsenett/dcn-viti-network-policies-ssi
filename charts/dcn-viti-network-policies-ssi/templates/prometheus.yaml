@@ -10,24 +10,20 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   groups:
-  - name: pod.errors
+    - name: viti-network-policies-ssi.pod.health
     rules:
-    - alert: VITI_NETWORK_POLICIES_SSI_ALERT
-      annotations:
-        description: {{ quote "POD '{{ $labels.pod }}' in namespace '{{ $labels.namespace }}' has restarted 3 or more times in the last 5 minutes - https://confluence.nhn.no/x/C7V-Gw" | replace "\"" "" }}
-        summary: {{ quote "VITI Network Policies SSI POD has crashed 3 or more times in the last 5 minutes - POD:{{ $labels.pod }} - https://confluence.nhn.no/x/C7V-Gw" | replace "\"" "" }}
-      expr: |
-        (
-          sum by (namespace, pod) (
-            increase(kube_pod_container_status_restarts_total{
-              namespace="{{ .Values.namespace }}",
-              pod=~"viti-network-policies-ssi-deployment-.*"
-            }[5m])
-          )
-        ) >= 3
-      for: 0m
-      labels:
-        app:  viti-network-policies-ssi
+    - alert: VITI_NETWORK_POLICIES_SSI_DEPLOYMENT_DOWN
+        annotations:
+        summary: VITI Network Policies SSI is down (0 available replicas)
+        description: Deployment viti-network-policies-ssi-deployment has 0 available replicas in {{`{{ $labels.namespace }}`}}.
+        expr: |
+            kube_deployment_status_replicas_available{
+                namespace="{{ .Values.namespace }}",
+                deployment="viti-network-policies-ssi-deployment"
+            } < 1
+        for: 5m
+        labels:
+        app: viti-network-policies-ssi
         cluster: {{ .Values.alarmathan.cluster }}
         criticality: {{ .Values.alarmathan.criticality }}
         environment: {{ .Values.alarmathan.environment }}
@@ -36,4 +32,79 @@ spec:
         service_id: {{ .Values.alarmathan.service_id | quote }}
         team: {{ .Values.alarmathan.team }}
         varseltilos: {{ .Values.alarmathan.varseltilos }}
+
+    - alert: VITI_NETWORK_POLICIES_SSI_POD_NOT_READY
+        annotations:
+        summary: VITI Network Policies SSI pod is not Ready
+        description: Pod {{`{{ $labels.pod }}`}} in {{`{{ $labels.namespace }}`}} has not been Ready for 5 minutes.
+        expr: |
+            min by (namespace, pod) (
+                kube_pod_status_ready{
+                namespace="{{ .Values.namespace }}",
+                pod=~"viti-network-policies-ssi-deployment-.*",
+                condition="true"
+                }
+            ) == 0
+        for: 5m
+        labels:
+        app: viti-network-policies-ssi
+        cluster: {{ .Values.alarmathan.cluster }}
+        criticality: {{ .Values.alarmathan.criticality }}
+        environment: {{ .Values.alarmathan.environment }}
+        namespace: kube-prometheus-stack
+        severity: {{ .Values.alarmathan.severity }}
+        service_id: {{ .Values.alarmathan.service_id | quote }}
+        team: {{ .Values.alarmathan.team }}
+        varseltilos: {{ .Values.alarmathan.varseltilos }}
+
+    - alert: VITI_NETWORK_POLICIES_SSI_CONTAINER_WAITING
+        annotations:
+        summary: VITI Network Policies SSI container waiting (CrashLoop/ImagePull/etc)
+        description: Pod {{`{{ $labels.pod }}`}} waiting reason={{`{{ $labels.reason }}`}}.
+        expr: |
+            max by (namespace, pod, reason) (
+                kube_pod_container_status_waiting_reason{
+                namespace="{{ .Values.namespace }}",
+                pod=~"viti-network-policies-ssi-deployment-.*",
+                reason=~"CrashLoopBackOff|ImagePullBackOff|ErrImagePull|CreateContainerConfigError"
+                }
+            ) == 1
+        for: 5m
+        labels:
+        app: viti-network-policies-ssi
+        cluster: {{ .Values.alarmathan.cluster }}
+        criticality: {{ .Values.alarmathan.criticality }}
+        environment: {{ .Values.alarmathan.environment }}
+        namespace: kube-prometheus-stack
+        severity: {{ .Values.alarmathan.severity }}
+        service_id: {{ .Values.alarmathan.service_id | quote }}
+        team: {{ .Values.alarmathan.team }}
+        varseltilos: {{ .Values.alarmathan.varseltilos }}
+
+#   - name: pod.errors
+#     rules:
+#     - alert: VITI_NETWORK_POLICIES_SSI_ALERT
+#       annotations:
+#         description: {{ quote "POD '{{ $labels.pod }}' in namespace '{{ $labels.namespace }}' has restarted 3 or more times in the last 5 minutes - https://confluence.nhn.no/x/C7V-Gw" | replace "\"" "" }}
+#         summary: {{ quote "VITI Network Policies SSI POD has crashed 3 or more times in the last 5 minutes - POD:{{ $labels.pod }} - https://confluence.nhn.no/x/C7V-Gw" | replace "\"" "" }}
+#       expr: |
+#         (
+#           sum by (namespace, pod) (
+#             increase(kube_pod_container_status_restarts_total{
+#               namespace="{{ .Values.namespace }}",
+#               pod=~"viti-network-policies-ssi-deployment-.*"
+#             }[5m])
+#           )
+#         ) >= 3
+#       for: 0m
+#       labels:
+#         app:  viti-network-policies-ssi
+#         cluster: {{ .Values.alarmathan.cluster }}
+#         criticality: {{ .Values.alarmathan.criticality }}
+#         environment: {{ .Values.alarmathan.environment }}
+#         namespace: kube-prometheus-stack
+#         severity: {{ .Values.alarmathan.severity }}
+#         service_id: {{ .Values.alarmathan.service_id | quote }}
+#         team: {{ .Values.alarmathan.team }}
+#         varseltilos: {{ .Values.alarmathan.varseltilos }}
 {{ end }}
