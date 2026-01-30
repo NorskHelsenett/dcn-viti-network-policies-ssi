@@ -1,4 +1,4 @@
-{{- if eq .Values.alarmathan.enable true}}
+{{- if and .Values.alarmathan.enable .Values.settings.continuousMode }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:

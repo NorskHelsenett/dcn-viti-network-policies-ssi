@@ -33,10 +33,10 @@ alarmathan:
       release: kube-prometheus-stack
   labels:
     app: viti-network-policies-ssi
-    environment: qa
+    environment: test
     cluster: mos3-k8s-qa-001
-    criticality: Lav
-    severity: Lav
+    criticality: Moderat
+    severity: Høy
     service_id: 917
     team: Team Datasenter-Nettverk (Forretningsområde Skytjenester)
     varseltilos: test
